@@ -6,7 +6,4 @@ export const site = {
   repoNote: "Rename the site, edit copy, and add lessons here + in src/lib/curriculum.ts.",
 } as const;
 
-export const nav = [
-  { href: "/tracks", label: "Tracks" },
-  { href: "/learn/python-basics", label: "Start learning" },
-] as const;
+export const nav = [{ href: "/tracks", label: "Tracks" }] as const;

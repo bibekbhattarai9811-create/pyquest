@@ -7,7 +7,7 @@ import { useProgress } from "@/components/ProgressProvider";
 import ProgressBar from "@/components/ProgressBar";
 
 export default function TrackSyllabus({ track }: { track: LiveTrack }) {
-  const { isComplete, hydrated, reset } = useProgress();
+  const { isComplete, hydrated } = useProgress();
   const lessons = trackLessons(track);
   const doneCount = hydrated
     ? lessons.filter((l) => isComplete(lessonKey(track.slug, l.slug))).length
@@ -39,29 +39,16 @@ export default function TrackSyllabus({ track }: { track: LiveTrack }) {
           <span className="font-semibold">{pct}%</span>
         </div>
         <ProgressBar value={pct} className="mt-2" />
-        <div className="mt-4 flex items-center gap-4">
-          <Link
-            href={`/learn/${track.slug}/${nextLesson.slug}`}
-            className="inline-block rounded-md bg-brand px-4 py-2 text-sm font-semibold text-[#0b0f1a] transition-colors hover:bg-brand-strong"
-          >
-            {doneCount === 0
-              ? "Start track"
-              : doneCount === lessons.length
-                ? "Review lessons"
-                : "Continue"}
-          </Link>
-          {doneCount > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm("Reset your progress on all tracks? This can't be undone.")) reset();
-              }}
-              className="text-xs text-dim underline transition-colors hover:text-ink"
-            >
-              Reset progress
-            </button>
-          )}
-        </div>
+        <Link
+          href={`/learn/${track.slug}/${nextLesson.slug}`}
+          className="mt-4 inline-block rounded-md bg-brand px-4 py-2 text-sm font-semibold text-[#0b0f1a] transition-colors hover:bg-brand-strong"
+        >
+          {doneCount === 0
+            ? "Start track"
+            : doneCount === lessons.length
+              ? "Review lessons"
+              : "Continue"}
+        </Link>
       </div>
 
       <div className="mt-8 space-y-8">

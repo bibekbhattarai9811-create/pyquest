@@ -7,6 +7,7 @@ import {
   outlineLessonCount,
 } from "@/lib/curriculum";
 import { accent } from "@/lib/accent";
+import { getSessionUser } from "@/lib/auth";
 
 const steps = [
   {
@@ -23,8 +24,15 @@ const steps = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
   const tracks = getTracks();
+  const user = await getSessionUser();
+  const startHref = !user
+    ? "/signup"
+    : user.status === "APPROVED"
+      ? "/learn/python-basics"
+      : "/pending";
+  const startLabel = user?.status === "APPROVED" ? "Continue learning" : "Get started";
 
   return (
     <div>
@@ -40,10 +48,10 @@ export default function Home() {
         <p className="mx-auto mt-4 max-w-xl text-pretty text-dim">{site.description}</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/learn/python-basics"
+            href={startHref}
             className="rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-[#0b0f1a] transition-colors hover:bg-brand-strong"
           >
-            Start with Python Basics
+            {startLabel}
           </Link>
           <Link
             href="/tracks"

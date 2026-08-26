@@ -4,77 +4,58 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
+  useTransition,
   type ReactNode,
 } from "react";
-
-const STORAGE_KEY = "pyquest:progress:v1";
+import { markLessonComplete } from "@/app/actions/progress";
 
 interface ProgressValue {
   /** lesson keys, e.g. "python-basics/loops" */
   completed: ReadonlySet<string>;
+  /** kept for API stability; always true now that progress is server-seeded */
   hydrated: boolean;
   isComplete: (key: string) => boolean;
   markComplete: (key: string) => void;
-  reset: () => void;
 }
 
 const ProgressContext = createContext<ProgressValue | null>(null);
 
-export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const [hydrated, setHydrated] = useState(false);
+export function ProgressProvider({
+  initialCompleted,
+  children,
+}: {
+  initialCompleted: string[];
+  children: ReactNode;
+}) {
+  const [completed, setCompleted] = useState<Set<string>>(() => new Set(initialCompleted));
+  const [, startTransition] = useTransition();
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setCompleted(new Set(parsed));
+  const markComplete = useCallback((key: string) => {
+    setCompleted((prev) => {
+      if (prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
+    startTransition(async () => {
+      try {
+        await markLessonComplete(key);
+      } catch {
+        /* offline / transient — local state still reflects the pass */
       }
-    } catch {
-      /* corrupt or unavailable storage — start fresh */
-    }
-    setHydrated(true);
+    });
   }, []);
-
-  const persist = useCallback((next: Set<string>) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
-    } catch {
-      /* ignore quota / privacy-mode errors */
-    }
-  }, []);
-
-  const markComplete = useCallback(
-    (key: string) => {
-      setCompleted((prev) => {
-        if (prev.has(key)) return prev;
-        const next = new Set(prev);
-        next.add(key);
-        persist(next);
-        return next;
-      });
-    },
-    [persist],
-  );
-
-  const reset = useCallback(() => {
-    setCompleted(new Set());
-    persist(new Set());
-  }, [persist]);
 
   const value = useMemo<ProgressValue>(
     () => ({
       completed,
-      hydrated,
+      hydrated: true,
       isComplete: (key: string) => completed.has(key),
       markComplete,
-      reset,
     }),
-    [completed, hydrated, markComplete, reset],
+    [completed, markComplete],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

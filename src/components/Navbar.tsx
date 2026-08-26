@@ -5,13 +5,17 @@ import { usePathname } from "next/navigation";
 import { site, nav } from "@/lib/site";
 import { allLessonKeys } from "@/lib/curriculum";
 import { useProgress } from "@/components/ProgressProvider";
+import { useAuth } from "@/components/AuthProvider";
+import LogoutButton from "@/components/LogoutButton";
 
 const TOTAL_LESSONS = allLessonKeys().length;
+const LESSON_KEYS = new Set(allLessonKeys());
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { completed, hydrated } = useProgress();
-  const done = [...completed].filter((k) => allLessonKeys().includes(k)).length;
+  const { completed } = useProgress();
+  const { user } = useAuth();
+  const done = [...completed].filter((k) => LESSON_KEYS.has(k)).length;
 
   return (
     <header className="sticky top-0 z-40 border-b border-edge bg-canvas/85 backdrop-blur">
@@ -38,13 +42,51 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {user?.status === "APPROVED" && (
+            <Link
+              href="/learn/python-basics"
+              className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                pathname.startsWith("/learn") ? "bg-panel-2 text-ink" : "text-dim hover:text-ink"
+              }`}
+            >
+              Learn
+            </Link>
+          )}
+          {user?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                pathname.startsWith("/admin") ? "bg-panel-2 text-ink" : "text-dim hover:text-ink"
+              }`}
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
-        <div className="ml-auto">
-          {hydrated && done > 0 && (
-            <span className="rounded-full border border-edge bg-panel px-3 py-1 text-xs text-dim">
+        <div className="ml-auto flex items-center gap-3">
+          {user && done > 0 && (
+            <span className="hidden rounded-full border border-edge bg-panel px-3 py-1 text-xs text-dim sm:inline">
               <span className="font-semibold text-ink">{done}</span> / {TOTAL_LESSONS} lessons
             </span>
+          )}
+          {user ? (
+            <>
+              <span className="hidden text-sm text-dim sm:inline">{user.name}</span>
+              <LogoutButton />
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-dim transition-colors hover:text-ink">
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-[#0b0f1a] transition-colors hover:bg-brand-strong"
+              >
+                Sign up
+              </Link>
+            </>
           )}
         </div>
       </div>
