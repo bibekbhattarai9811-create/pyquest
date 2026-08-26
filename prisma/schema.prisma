@@ -5,12 +5,15 @@
 // run `npx prisma migrate deploy`.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" for local machines; the rhel target is what Vercel's runtime needs.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection (used by the app)
+  directUrl = env("DIRECT_URL") // direct connection (used by migrations)
 }
 
 model User {

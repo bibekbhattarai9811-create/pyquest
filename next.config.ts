@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Keep Prisma's engine out of the bundler; load it as a normal Node module.
-  serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  // Load these as normal Node modules instead of bundling them.
+  serverExternalPackages: [
+    "@prisma/client",
+    "@prisma/adapter-neon",
+    "@neondatabase/serverless",
+    "bcryptjs",
+    "ws",
+  ],
 };
 
 export default nextConfig;

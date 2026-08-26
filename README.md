@@ -10,12 +10,17 @@ run on a small server + database.
 
 ```bash
 npm install
-cp .env.example .env
-npx prisma migrate dev
+cp .env.example .env      # then fill in the Neon connection strings
+npm run db:deploy         # create the tables
 npm run dev
 ```
 
 Open http://localhost:3100.
+
+> The database is **Neon Postgres**, reached over HTTPS (port 443) via Neon's
+> serverless driver — so it works even on networks that block Postgres' port
+> 5432, and on Vercel. Because of that, use `npm run db:deploy` (not
+> `npx prisma migrate`) to apply schema changes.
 
 - The **first account you sign up** becomes an **admin** and is auto-approved.
 - Every account after that lands on a "waiting for approval" screen until an
@@ -32,7 +37,7 @@ Open http://localhost:3100.
 | Code editor | CodeMirror 6 (`src/components/CodeEditor.tsx`) |
 | Python engine | `public/pyodide-worker.js` (Web Worker) + `src/lib/usePyodide.ts` |
 | Course content | `src/lib/curriculum.ts` (structure) + `src/content/**/*.md` (lesson text) |
-| Database | SQLite via Prisma (`prisma/schema.prisma`) |
+| Database | Neon Postgres via Prisma + `@prisma/adapter-neon` (`prisma/schema.prisma`, `src/lib/db.ts`) |
 | Auth | custom email+password, DB-backed sessions (`src/lib/auth.ts`) |
 | Progress | per-user rows in the DB (`src/app/actions/progress.ts`) |
 
@@ -54,9 +59,9 @@ Open http://localhost:3100.
 ### Handy commands
 
 ```bash
-npm run db:studio    # browse/edit the database in a GUI
-npm run db:migrate    # create + apply a migration after editing schema.prisma
-npm run db:reset      # wipe the database and re-run migrations (deletes all users)
+npm run db:deploy          # apply any pending migrations (over port 443)
+npm run db:new-migration    # print the SQL diff after editing schema.prisma
+npm run db:studio           # browse/edit the database in a GUI (needs port 5432)
 ```
 
 ## Editing the course
@@ -75,14 +80,9 @@ npm run db:reset      # wipe the database and re-run migrations (deletes all use
 
 ## Deploying
 
-The app needs a persistent database, so plain Vercel (ephemeral filesystem)
-won't keep SQLite data. To deploy:
-
-1. In `prisma/schema.prisma` set `provider = "postgresql"`.
-2. Provision Postgres (e.g. a free [Neon](https://neon.tech) database) and set
-   `DATABASE_URL` in the host's environment variables.
-3. `npx prisma migrate deploy` against it (the `build` script already runs
-   `prisma generate`).
+See **[DEPLOY.md](DEPLOY.md)** — GitHub → Neon → Vercel, step by step. The Neon
+database is already set up; what's left is pushing to GitHub and importing the
+repo into Vercel with three environment variables.
 
 ## Known gaps / next steps
 
