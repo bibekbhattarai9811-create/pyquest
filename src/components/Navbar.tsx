@@ -1,0 +1,53 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { site, nav } from "@/lib/site";
+import { allLessonKeys } from "@/lib/curriculum";
+import { useProgress } from "@/components/ProgressProvider";
+
+const TOTAL_LESSONS = allLessonKeys().length;
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const { completed, hydrated } = useProgress();
+  const done = [...completed].filter((k) => allLessonKeys().includes(k)).length;
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-edge bg-canvas/85 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+        <Link href="/" className="flex items-center gap-2 font-semibold">
+          <span className="grid h-7 w-7 place-items-center rounded-md bg-brand font-mono text-sm text-[#0b0f1a]">
+            Py
+          </span>
+          <span>{site.name}</span>
+        </Link>
+
+        <nav className="ml-2 hidden items-center gap-1 sm:flex">
+          {nav.map((item) => {
+            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                  active ? "bg-panel-2 text-ink" : "text-dim hover:text-ink"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="ml-auto">
+          {hydrated && done > 0 && (
+            <span className="rounded-full border border-edge bg-panel px-3 py-1 text-xs text-dim">
+              <span className="font-semibold text-ink">{done}</span> / {TOTAL_LESSONS} lessons
+            </span>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

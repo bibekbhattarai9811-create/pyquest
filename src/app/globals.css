@@ -1,26 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------------------------------ *
+ * PyQuest theme — dark only.  Custom color tokens become utilities:
+ *   --color-canvas  ->  bg-canvas / text-canvas / border-canvas ...
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-canvas: #0b0f1a;
+  --color-panel: #131a2b;
+  --color-panel-2: #1b2440;
+  --color-edge: #2a3352;
+  --color-ink: #e7eaf3;
+  --color-dim: #9aa5c4;
+  --color-brand: #7c83f7;
+  --color-brand-strong: #9aa0ff;
+  --color-gold: #f4c451;
+  --color-good: #37d67a;
+  --color-bad: #ff6b6b;
+  --color-sky: #56c2ff;
+
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Thin, quiet scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-edge) transparent;
+}
+
+/* ------------------------------------------------------------------ *
+ * Lesson prose (react-markdown output)
+ * ------------------------------------------------------------------ */
+.lesson-prose {
+  color: var(--color-ink);
+  line-height: 1.7;
+}
+.lesson-prose > * + * {
+  margin-top: 1rem;
+}
+.lesson-prose h1,
+.lesson-prose h2,
+.lesson-prose h3 {
+  font-weight: 650;
+  line-height: 1.3;
+  margin-top: 2rem;
+}
+.lesson-prose h1 {
+  font-size: 1.6rem;
+}
+.lesson-prose h2 {
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--color-edge);
+  padding-bottom: 0.4rem;
+}
+.lesson-prose h3 {
+  font-size: 1.05rem;
+}
+.lesson-prose a {
+  color: var(--color-brand-strong);
+  text-decoration: underline;
+}
+.lesson-prose strong {
+  color: #fff;
+  font-weight: 650;
+}
+.lesson-prose ul,
+.lesson-prose ol {
+  padding-left: 1.4rem;
+}
+.lesson-prose ul {
+  list-style: disc;
+}
+.lesson-prose ol {
+  list-style: decimal;
+}
+.lesson-prose li + li {
+  margin-top: 0.35rem;
+}
+.lesson-prose blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding-left: 1rem;
+  color: var(--color-dim);
+}
+.lesson-prose :not(pre) > code {
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-edge);
+  border-radius: 5px;
+  padding: 0.1rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.lesson-prose pre {
+  background: #0d1220;
+  border: 1px solid var(--color-edge);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.lesson-prose pre code {
+  font-family: var(--font-mono);
+}
+.lesson-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.lesson-prose th,
+.lesson-prose td {
+  border: 1px solid var(--color-edge);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+/* ------------------------------------------------------------------ *
+ * Minimal highlight.js dark theme (used by rehype-highlight)
+ * ------------------------------------------------------------------ */
+.hljs {
+  color: #e7eaf3;
+  background: transparent;
+}
+.hljs-comment,
+.hljs-quote {
+  color: #6b7699;
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type {
+  color: #c792ea;
+}
+.hljs-string,
+.hljs-attr,
+.hljs-addition {
+  color: #c3e88d;
+}
+.hljs-number,
+.hljs-meta {
+  color: #f78c6c;
+}
+.hljs-title,
+.hljs-name,
+.hljs-built_in,
+.hljs-title.function_ {
+  color: #82aaff;
+}
+.hljs-params {
+  color: #e7eaf3;
+}
+.hljs-comment {
+  opacity: 0.9;
 }

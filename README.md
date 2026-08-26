@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PyQuest
 
-## Getting Started
+An interactive "learn Python in the browser" site, in the spirit of Codédex /
+Codecademy. Read a short lesson, write real Python in an editor, run it, and get
+checked feedback. Python runs **entirely in the browser** via
+[Pyodide](https://pyodide.org) — there is no backend and nothing is uploaded.
 
-First, run the development server:
+## Run it locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The first time you press **Run**, the browser
+downloads Pyodide (~6 MB, then cached).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it's built
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Piece | Where |
+| ----- | ----- |
+| Framework | Next.js (App Router) + React + TypeScript |
+| Styling | Tailwind CSS v4 (dark theme, tokens in `src/app/globals.css`) |
+| Code editor | CodeMirror 6 (`src/components/CodeEditor.tsx`) |
+| Python engine | `public/pyodide-worker.js` (Web Worker) + `src/lib/usePyodide.ts` |
+| Course content | `src/lib/curriculum.ts` (structure) + `src/content/**/*.md` (lesson text) |
+| Progress | `localStorage`, via `src/components/ProgressProvider.tsx` |
 
-## Learn More
+## Editing the course
 
-To learn more about Next.js, take a look at the following resources:
+- **Change site name / copy:** `src/lib/site.ts`
+- **Add or edit a lesson:**
+  1. Add an entry to a module's `lessons` array in `src/lib/curriculum.ts`
+     (slug, title, `starterCode`, `solution`, and a `check`).
+  2. Create the matching Markdown file in `src/content/<track>/`.
+- **`check` types:**
+  - `{ kind: "output", expected: "..." }` — compares printed output (trimmed).
+  - `{ kind: "test", code: "assert ..." }` — Python asserts run in the learner's
+    namespace right after their code; no error = pass.
+- **Turn a "coming soon" track on:** change its `status` to `"live"` and give it
+  real `modules` instead of an `outline`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What's an MVP-shaped gap (next steps)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Lessons for the Data Scientist / ML / AI tracks (outlines are in place).
+- User accounts + progress synced across devices (currently per-browser).
+- Deploy (Vercel: `npx vercel`). The app is static apart from on-demand rendering
+  of "coming soon" track pages.
+- Heavy libraries (full scikit-learn, GPU) would need server-side execution;
+  Pyodide covers pure-Python + NumPy/pandas.
