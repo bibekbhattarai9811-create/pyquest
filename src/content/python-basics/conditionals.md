@@ -31,16 +31,13 @@ else:
     print("F")
 ```
 
-### Comparison operators
+The conditions are the comparisons you met in **Booleans and comparisons** —
+`>`, `>=`, `==`, and so on — optionally joined with `and` / `or`:
 
-| Operator | Meaning              |
-| -------- | -------------------- |
-| `==`     | equal to             |
-| `!=`     | not equal to         |
-| `>` `<`  | greater / less than  |
-| `>=` `<=`| greater/less or equal|
-
-Use `==` to compare, `=` to assign. Mixing them up is a classic bug.
+```python
+if age >= 13 and age < 20:
+    print("teenager")
+```
 
 ## Your task
 

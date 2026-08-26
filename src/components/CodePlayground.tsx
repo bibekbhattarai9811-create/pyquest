@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Check } from "@/lib/curriculum";
 import { usePyodide } from "@/lib/usePyodide";
 import { useProgress } from "@/components/ProgressProvider";
@@ -43,8 +43,14 @@ export default function CodePlayground({
   const done = hydrated && isComplete(lessonKey);
   const booting = status === "booting";
 
+  const busyRef = useRef(false);
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+
   const execute = useCallback(
     async (withCheck: boolean) => {
+      if (busyRef.current) return;
       setBusy(true);
       setVerdict("none");
       setError(null);
@@ -83,7 +89,7 @@ export default function CodePlayground({
             Reset code
           </button>
         </div>
-        <CodeEditor value={code} onChange={setCode} />
+        <CodeEditor value={code} onChange={setCode} onRun={() => execute(false)} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -107,6 +113,12 @@ export default function CodePlayground({
           <span className="text-xs text-dim">Booting Python… (first run downloads it, ~5s)</span>
         )}
         {busy && !booting && <span className="text-xs text-dim">Working…</span>}
+        {!busy && (
+          <span className="hidden text-xs text-dim sm:inline">
+            <kbd className="rounded border border-edge px-1">⌘/Ctrl</kbd>+
+            <kbd className="rounded border border-edge px-1">Enter</kbd> to run
+          </span>
+        )}
         {done && !busy && (
           <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-good">
             ✓ Completed
