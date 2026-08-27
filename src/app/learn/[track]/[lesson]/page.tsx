@@ -6,6 +6,7 @@ import { getSolutionAccess } from "@/app/actions/solutions";
 import Markdown from "@/components/Markdown";
 import CodePlayground from "@/components/CodePlayground";
 import LessonTopBar from "@/components/LessonTopBar";
+import ModuleVideo from "@/components/ModuleVideo";
 
 export function generateStaticParams() {
   return getAllLessonParams();
@@ -37,6 +38,9 @@ export default async function LessonPage({
   const key = lessonKey(track, current.slug);
   const access = await getSolutionAccess(key);
 
+  const isFirstOfModule = found.module.lessons[0]?.slug === current.slug;
+  const moduleVideo = isFirstOfModule ? found.module.video : undefined;
+
   return (
     <div>
       <LessonTopBar track={liveTrack} index={index} total={total} prev={prev} next={next} />
@@ -44,6 +48,9 @@ export default async function LessonPage({
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 lg:grid-cols-2">
         {/* Lesson text */}
         <article className="min-w-0">
+          {moduleVideo && (
+            <ModuleVideo moduleTitle={found.module.title} video={moduleVideo} />
+          )}
           <p className="text-xs font-medium uppercase tracking-wide text-brand">
             {found.module.title}
           </p>

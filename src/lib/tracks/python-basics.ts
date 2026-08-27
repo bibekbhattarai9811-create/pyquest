@@ -32,6 +32,10 @@ export const pythonBasics: LiveTrack = {
     /* -------------------------------------------------------------- */
     {
       title: "Your first words",
+      // A short intro video shown when a learner starts this module (DataCamp
+      // style). Paste a YouTube URL or video id. Add `video:` to any module.
+      // This one is a placeholder — swap it for your own.
+      video: "https://www.youtube.com/watch?v=x7X9w_GIm1s",
       lessons: [
         L(
           "say-hello",

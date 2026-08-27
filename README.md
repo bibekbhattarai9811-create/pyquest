@@ -84,6 +84,10 @@ npm run db:studio           # browse/edit the database in a GUI (needs port 5432
   `solution` through real Python and checks it against its `check`.
 - **Turn a "coming soon" track on:** in `src/lib/curriculum.ts`, change its
   `status` to `"live"` and give it real `modules` instead of an `outline`.
+- **Add a module intro video** (DataCamp style): add `video: "<YouTube URL or id>"`
+  to any module object in `src/lib/tracks/python-basics.ts`. It shows on that
+  module's first lesson (collapsible) and as a "▶ intro video" link on the
+  syllabus. Module 1's is a placeholder — swap it.
 
 ## Deploying
 

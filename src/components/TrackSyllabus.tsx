@@ -54,9 +54,19 @@ export default function TrackSyllabus({ track }: { track: LiveTrack }) {
       <div className="mt-8 space-y-8">
         {track.modules.map((module, mi) => (
           <section key={module.title}>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-dim">
-              Module {mi + 1} · {module.title}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-dim">
+                Module {mi + 1} · {module.title}
+              </h2>
+              {module.video && module.lessons[0] && (
+                <Link
+                  href={`/learn/${track.slug}/${module.lessons[0].slug}`}
+                  className="text-xs text-brand hover:underline"
+                >
+                  ▶ intro video
+                </Link>
+              )}
+            </div>
             <ol className="mt-3 divide-y divide-edge overflow-hidden rounded-xl border border-edge bg-panel">
               {module.lessons.map((lesson, li) => {
                 const key = lessonKey(track.slug, lesson.slug);

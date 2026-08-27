@@ -28,6 +28,11 @@ export interface Lesson {
 
 export interface Module {
   title: string;
+  /**
+   * Optional short intro video, shown when you start the module (on its first
+   * lesson) — DataCamp style. A YouTube URL or bare 11-character video id.
+   */
+  video?: string;
   lessons: Lesson[];
 }
 
