@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { allLessonKeys, percent } from "@/lib/curriculum";
+import { allLessonKeys, lessonTitleForKey, percent } from "@/lib/curriculum";
 import UserActions from "@/components/UserActions";
+import SolutionRequestActions from "@/components/SolutionRequestActions";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -29,6 +30,11 @@ export default async function AdminPage() {
     orderBy: { createdAt: "asc" },
     include: { _count: { select: { completions: true } } },
   });
+  const solutionRequests = await db.solutionRequest.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { name: true, email: true } } },
+  });
 
   const pending = users.filter((u) => u.status === "PENDING").length;
 
@@ -43,7 +49,38 @@ export default async function AdminPage() {
             <span className="text-gold">{pending} waiting for approval</span>
           </>
         )}
+        {solutionRequests.length > 0 && (
+          <>
+            {" · "}
+            <span className="text-gold">{solutionRequests.length} solution request(s)</span>
+          </>
+        )}
       </p>
+
+      {solutionRequests.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-dim">
+            Solution requests
+          </h2>
+          <ul className="mt-3 divide-y divide-edge overflow-hidden rounded-xl border border-edge">
+            {solutionRequests.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
+                <span className="min-w-0">
+                  <span className="font-medium">{r.user.name}</span>{" "}
+                  <span className="text-dim">wants</span>{" "}
+                  <span className="font-medium">{lessonTitleForKey(r.lessonKey)}</span>
+                  <span className="ml-2 text-xs text-dim">
+                    {r.createdAt.toISOString().slice(0, 10)}
+                  </span>
+                </span>
+                <span className="ml-auto">
+                  <SolutionRequestActions id={r.id} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-edge">
         <table className="w-full min-w-[640px] text-sm">

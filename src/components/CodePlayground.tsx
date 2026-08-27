@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { Check } from "@/lib/curriculum";
 import { usePyodide } from "@/lib/usePyodide";
 import { useProgress } from "@/components/ProgressProvider";
+import { useAuth } from "@/components/AuthProvider";
+import { requestSolution, type RequestStatus } from "@/app/actions/solutions";
 import Console from "@/components/Console";
 
 const CodeEditor = dynamic(() => import("@/components/CodeEditor"), {
@@ -22,16 +24,21 @@ export default function CodePlayground({
   starterCode,
   check,
   solution,
+  solutionRequestStatus,
   nextHref,
 }: {
   lessonKey: string;
   starterCode: string;
   check: Check;
-  solution: string;
+  /** null when the viewer isn't allowed to see it */
+  solution: string | null;
+  solutionRequestStatus: RequestStatus;
   nextHref: string | null;
 }) {
   const { status, run } = usePyodide();
   const { isComplete, markComplete, hydrated } = useProgress();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
 
   const [code, setCode] = useState(starterCode);
   const [stdout, setStdout] = useState("");
@@ -39,6 +46,9 @@ export default function CodePlayground({
   const [verdict, setVerdict] = useState<Verdict>("none");
   const [busy, setBusy] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [reqStatus, setReqStatus] = useState<RequestStatus>(solutionRequestStatus);
+  const [requesting, startRequest] = useTransition();
 
   const done = hydrated && isComplete(lessonKey);
   const booting = status === "booting";
@@ -70,6 +80,13 @@ export default function CodePlayground({
     },
     [code, check, run, markComplete, lessonKey],
   );
+
+  function askForSolution() {
+    startRequest(async () => {
+      const res = await requestSolution(lessonKey);
+      if (res.ok) setReqStatus("pending");
+    });
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -151,18 +168,69 @@ export default function CodePlayground({
 
       <Console stdout={stdout} error={error} busy={busy} />
 
-      <div className="text-xs">
-        <button
-          type="button"
-          onClick={() => setShowSolution((v) => !v)}
-          className="text-dim underline transition-colors hover:text-ink"
-        >
-          {showSolution ? "Hide solution" : "Stuck? Show a solution"}
-        </button>
-        {showSolution && (
-          <pre className="mt-2 overflow-x-auto rounded-lg border border-edge bg-[#0d1220] p-3 font-mono text-[13px] leading-relaxed text-ink">
-            {solution}
-          </pre>
+      {/* Hint + solution */}
+      <div className="flex flex-col gap-2 text-xs">
+        {check.hint && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowHint((v) => !v)}
+              className="text-dim underline transition-colors hover:text-ink"
+            >
+              {showHint ? "Hide hint" : "Show hint"}
+            </button>
+            {showHint && <p className="mt-1 text-dim">{check.hint}</p>}
+          </div>
+        )}
+
+        {solution !== null ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowSolution((v) => !v)}
+              className="text-dim underline transition-colors hover:text-ink"
+            >
+              {showSolution ? "Hide solution" : "Show solution"}
+            </button>
+            {!isAdmin && (
+              <span className="ml-2 text-good">✓ an admin unlocked this for you</span>
+            )}
+            {showSolution && (
+              <pre className="mt-2 overflow-x-auto rounded-lg border border-edge bg-[#0d1220] p-3 font-mono text-[13px] leading-relaxed text-ink">
+                {solution}
+              </pre>
+            )}
+          </div>
+        ) : reqStatus === "pending" ? (
+          <p className="text-dim">⏳ Solution requested — an admin will review it.</p>
+        ) : reqStatus === "granted" ? (
+          <p className="text-dim">
+            Solution unlocked — <button
+              type="button"
+              onClick={() => location.reload()}
+              className="underline hover:text-ink"
+            >
+              reload
+            </button>{" "}
+            to see it.
+          </p>
+        ) : (
+          <div className="text-dim">
+            {reqStatus === "denied" && <p className="mb-1">An admin declined this request.</p>}
+            <span>Tried the hint and still stuck? </span>
+            <button
+              type="button"
+              onClick={askForSolution}
+              disabled={requesting}
+              className="underline transition-colors hover:text-ink disabled:opacity-50"
+            >
+              {requesting
+                ? "Sending…"
+                : reqStatus === "denied"
+                  ? "Ask again"
+                  : "Request the solution"}
+            </button>
+          </div>
         )}
       </div>
     </div>

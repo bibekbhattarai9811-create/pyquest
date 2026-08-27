@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllLessonParams, getLesson, lessonKey } from "@/lib/curriculum";
+import { getSolutionAccess } from "@/app/actions/solutions";
 import Markdown from "@/components/Markdown";
 import CodePlayground from "@/components/CodePlayground";
 import LessonTopBar from "@/components/LessonTopBar";
@@ -33,6 +34,9 @@ export default async function LessonPage({
   const { lesson: current, track: liveTrack, index, total, prev, next } = found;
   const nextHref = next ? `/learn/${track}/${next.slug}` : null;
 
+  const key = lessonKey(track, current.slug);
+  const access = await getSolutionAccess(key);
+
   return (
     <div>
       <LessonTopBar track={liveTrack} index={index} total={total} prev={prev} next={next} />
@@ -52,10 +56,11 @@ export default async function LessonPage({
         {/* Editor */}
         <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
           <CodePlayground
-            lessonKey={lessonKey(track, current.slug)}
+            lessonKey={key}
             starterCode={current.starterCode}
             check={current.check}
-            solution={current.solution}
+            solution={access.canSee ? current.solution : null}
+            solutionRequestStatus={access.requestStatus}
             nextHref={nextHref}
           />
         </div>

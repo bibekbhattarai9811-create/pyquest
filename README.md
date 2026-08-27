@@ -53,6 +53,11 @@ Open http://localhost:3100.
 - **Admin dashboard:** `/admin` (guarded by `src/app/admin/layout.tsx`) lists
   every user with their status and lesson progress, and can approve / block /
   delete them. An admin can't delete themselves or the last admin.
+- **Solutions are admin-only.** Learners get the hint freely and can *request*
+  the full solution for a lesson; the request appears in `/admin` to Grant or
+  Deny. A granted solution unlocks only that one lesson for that one learner.
+  (`SolutionRequest` model · `src/app/actions/solutions.ts`.) The solution text
+  is never sent to a browser that isn't allowed to see it.
 - **Make someone an admin without the "first user" trick:** set
   `ADMIN_EMAILS="a@x.com,b@y.com"` in `.env` before they sign up.
 

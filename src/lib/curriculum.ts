@@ -225,3 +225,9 @@ export function percent(done: number, total: number): number {
   if (total <= 0) return 0;
   return Math.round((done / total) * 100);
 }
+
+/** "python-basics/loops" -> "Loops" (or the key itself if not found). */
+export function lessonTitleForKey(key: string): string {
+  const [trackSlug, lessonSlug] = key.split("/");
+  return getLesson(trackSlug ?? "", lessonSlug ?? "")?.lesson.title ?? key;
+}
