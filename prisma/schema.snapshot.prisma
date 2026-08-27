@@ -26,6 +26,7 @@ model User {
   sessions         Session[]
   completions      Completion[]
   solutionRequests SolutionRequest[]
+  tutorUsage       TutorUsage[]
 }
 
 model Session {
@@ -60,4 +61,14 @@ model SolutionRequest {
 
   @@unique([userId, lessonKey])
   @@index([status])
+}
+
+model TutorUsage {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day    String // "2026-08-27"
+  count  Int    @default(0)
+
+  @@unique([userId, day])
 }

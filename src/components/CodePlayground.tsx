@@ -9,6 +9,7 @@ import { useProgress } from "@/components/ProgressProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { requestSolution, type RequestStatus } from "@/app/actions/solutions";
 import Console from "@/components/Console";
+import Tutor from "@/components/Tutor";
 
 const CodeEditor = dynamic(() => import("@/components/CodeEditor"), {
   ssr: false,
@@ -26,6 +27,7 @@ export default function CodePlayground({
   solution,
   solutionRequestStatus,
   nextHref,
+  tutorAvailable,
 }: {
   lessonKey: string;
   starterCode: string;
@@ -34,6 +36,7 @@ export default function CodePlayground({
   solution: string | null;
   solutionRequestStatus: RequestStatus;
   nextHref: string | null;
+  tutorAvailable: boolean;
 }) {
   const { status, run } = usePyodide();
   const { isComplete, markComplete, hydrated } = useProgress();
@@ -233,6 +236,8 @@ export default function CodePlayground({
           </div>
         )}
       </div>
+
+      {tutorAvailable && <Tutor lessonKey={lessonKey} code={code} lastError={error} />}
     </div>
   );
 }

@@ -35,8 +35,13 @@ export default async function AdminPage() {
     orderBy: { createdAt: "asc" },
     include: { user: { select: { name: true, email: true } } },
   });
+  const tutorToday = await db.tutorUsage.aggregate({
+    where: { day: new Date().toISOString().slice(0, 10) },
+    _sum: { count: true },
+  });
 
   const pending = users.filter((u) => u.status === "PENDING").length;
+  const tutorMessages = tutorToday._sum.count ?? 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -55,6 +60,8 @@ export default async function AdminPage() {
             <span className="text-gold">{solutionRequests.length} solution request(s)</span>
           </>
         )}
+        {" · "}
+        <span>AI tutor: {tutorMessages} message{tutorMessages === 1 ? "" : "s"} today</span>
       </p>
 
       {solutionRequests.length > 0 && (

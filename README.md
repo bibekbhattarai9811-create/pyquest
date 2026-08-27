@@ -58,6 +58,18 @@ Open http://localhost:3100.
   Deny. A granted solution unlocks only that one lesson for that one learner.
   (`SolutionRequest` model · `src/app/actions/solutions.ts`.) The solution text
   is never sent to a browser that isn't allowed to see it.
+- **AI tutor** — a hints-only chat panel under the code editor on lesson pages,
+  powered by **Nemotron 3 Ultra** via [OpenRouter](https://openrouter.ai). It
+  sees the lesson text, the learner's current code, and their last error, and is
+  told never to write the full solution. Per-user daily cap (`TutorUsage`);
+  usage shows on `/admin`. Files: `src/lib/tutor.ts`, `src/app/api/tutor/route.ts`,
+  `src/components/Tutor.tsx`.
+  - **To enable:** get a free key at <https://openrouter.ai/keys>, set
+    `OPENROUTER_API_KEY` in `.env` (and Vercel). With no key the panel just
+    doesn't appear.
+  - `TUTOR_MODEL` (default `nvidia/nemotron-3-ultra-550b-a55b:free`) and
+    `TUTOR_DAILY_LIMIT` (default `25`) are env vars — swap to the paid model or a
+    different one without code changes.
 - **Make someone an admin without the "first user" trick:** set
   `ADMIN_EMAILS="a@x.com,b@y.com"` in `.env` before they sign up.
 

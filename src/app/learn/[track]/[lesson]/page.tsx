@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllLessonParams, getLesson, lessonKey } from "@/lib/curriculum";
 import { getSolutionAccess } from "@/app/actions/solutions";
+import { tutorConfigured } from "@/lib/tutor";
 import Markdown from "@/components/Markdown";
 import CodePlayground from "@/components/CodePlayground";
 import LessonTopBar from "@/components/LessonTopBar";
@@ -69,6 +70,7 @@ export default async function LessonPage({
             solution={access.canSee ? current.solution : null}
             solutionRequestStatus={access.requestStatus}
             nextHref={nextHref}
+            tutorAvailable={tutorConfigured()}
           />
         </div>
       </div>
