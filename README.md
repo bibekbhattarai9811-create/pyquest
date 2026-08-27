@@ -36,7 +36,7 @@ Open http://localhost:3100.
 | Styling | Tailwind CSS v4 (dark theme, tokens in `src/app/globals.css`) |
 | Code editor | CodeMirror 6 (`src/components/CodeEditor.tsx`) |
 | Python engine | `public/pyodide-worker.js` (Web Worker) + `src/lib/usePyodide.ts` |
-| Course content | `src/lib/curriculum.ts` (structure) + `src/content/**/*.md` (lesson text) |
+| Course content | `src/lib/tracks/python-basics.ts` (83 lessons: text, starter code, solution, checker) · `src/lib/curriculum.ts` (registry + the "coming soon" tracks) |
 | Database | Neon Postgres via Prisma + `@prisma/adapter-neon` (`prisma/schema.prisma`, `src/lib/db.ts`) |
 | Auth | custom email+password, DB-backed sessions (`src/lib/auth.ts`) |
 | Progress | per-user rows in the DB (`src/app/actions/progress.ts`) |
@@ -67,16 +67,18 @@ npm run db:studio           # browse/edit the database in a GUI (needs port 5432
 ## Editing the course
 
 - **Change site name / copy:** `src/lib/site.ts`
-- **Add or edit a lesson:**
-  1. Add an entry to a module's `lessons` array in `src/lib/curriculum.ts`
-     (slug, title, `starterCode`, `solution`, and a `check`).
-  2. Create the matching Markdown file in `src/content/<track>/`.
+- **Add or edit a lesson:** each lesson is one `L(...)` call in
+  `src/lib/tracks/python-basics.ts` — `L(slug, title, summary, body, starterCode, solution, check)`.
+  `body` is Markdown. The design rule: one idea per lesson, and the `starterCode`
+  is runnable code the learner fixes with a **single small edit**.
 - **`check` types:**
-  - `{ kind: "output", expected: "..." }` — compares printed output (trimmed).
-  - `{ kind: "test", code: "assert ..." }` — Python asserts run in the learner's
-    namespace right after their code; no error = pass.
-- **Turn a "coming soon" track on:** change its `status` to `"live"` and give it
-  real `modules` instead of an `outline`.
+  - `out("expected output", "hint")` — compares printed output (trimmed).
+  - `test("assert ...", "hint")` — Python asserts run right after the learner's
+    code; no error = pass.
+- **Verify all lessons:** `node scripts/check-lessons.mjs` runs every lesson's
+  `solution` through real Python and checks it against its `check`.
+- **Turn a "coming soon" track on:** in `src/lib/curriculum.ts`, change its
+  `status` to `"live"` and give it real `modules` instead of an `outline`.
 
 ## Deploying
 

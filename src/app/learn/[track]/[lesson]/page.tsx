@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllLessonParams, getLesson, lessonKey } from "@/lib/curriculum";
-import { getLessonMarkdown } from "@/lib/content";
 import Markdown from "@/components/Markdown";
 import CodePlayground from "@/components/CodePlayground";
 import LessonTopBar from "@/components/LessonTopBar";
@@ -32,7 +31,6 @@ export default async function LessonPage({
   if (!found) notFound();
 
   const { lesson: current, track: liveTrack, index, total, prev, next } = found;
-  const markdown = await getLessonMarkdown(track, current.file);
   const nextHref = next ? `/learn/${track}/${next.slug}` : null;
 
   return (
@@ -47,7 +45,7 @@ export default async function LessonPage({
           </p>
           <h1 className="mt-1 text-2xl font-semibold">{current.title}</h1>
           <div className="mt-5">
-            <Markdown source={markdown} />
+            <Markdown source={current.body} />
           </div>
         </article>
 
