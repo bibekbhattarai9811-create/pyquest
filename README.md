@@ -70,8 +70,33 @@ Open http://localhost:3100.
   - `TUTOR_MODEL` (default `nvidia/nemotron-3-ultra-550b-a55b:free`) and
     `TUTOR_DAILY_LIMIT` (default `25`) are env vars — swap to the paid model or a
     different one without code changes.
+- **Forgot password.** `/forgot-password` emails a one-time link (valid 1 hour)
+  via [Resend](https://resend.com); `/reset-password/[token]` sets the new
+  password and signs the account out everywhere. The reply is always the same
+  generic message whether or not the email exists, so it can't be used to find
+  out who has an account. Model: `PasswordResetToken`. Files: `src/lib/email.ts`,
+  the `requestPasswordReset` / `resetPassword` actions in `src/app/actions/auth.ts`.
+  - **To enable email delivery:** get a free key at
+    <https://resend.com/api-keys>, set `RESEND_API_KEY` in `.env` (and Vercel).
+    **Without a key it still works** — the reset link is printed to the server
+    console (`npm run dev` output locally, the Vercel function logs in
+    production) instead of emailed, so you're never locked out while setting
+    email up.
 - **Make someone an admin without the "first user" trick:** set
   `ADMIN_EMAILS="a@x.com,b@y.com"` in `.env` before they sign up.
+- **Forgot the admin password with no email set up?** Reset the hash directly:
+  ```bash
+  node --input-type=module -e "
+  import bcrypt from 'bcryptjs';
+  import { Pool, neonConfig } from '@neondatabase/serverless';
+  import ws from 'ws'; import fs from 'fs';
+  neonConfig.webSocketConstructor = ws;
+  const hash = await bcrypt.hash('NEW_PASSWORD_HERE', 10);
+  const p = new Pool({ connectionString: fs.readFileSync('.env','utf8').match(/DATABASE_URL=\"([^\"]+)\"/)[1] });
+  await p.query('UPDATE \"User\" SET \"passwordHash\" = \$1 WHERE email = \$2', [hash, 'you@example.com']);
+  await p.end();
+  "
+  ```
 
 ### Handy commands
 

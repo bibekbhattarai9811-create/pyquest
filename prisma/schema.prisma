@@ -27,6 +27,7 @@ model User {
   completions      Completion[]
   solutionRequests SolutionRequest[]
   tutorUsage       TutorUsage[]
+  resetTokens      PasswordResetToken[]
 }
 
 model Session {
@@ -71,4 +72,15 @@ model TutorUsage {
   count  Int    @default(0)
 
   @@unique([userId, day])
+}
+
+model PasswordResetToken {
+  token     String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
