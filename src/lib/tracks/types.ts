@@ -24,6 +24,11 @@ export interface Lesson {
   starterCode: string;
   solution: string;
   check: Check;
+  /**
+   * Extra Pyodide packages this lesson needs (e.g. ["numpy", "pandas"]).
+   * Loaded once per session and cached in the worker. Omit for plain Python.
+   */
+  packages?: string[];
 }
 
 export interface Module {

@@ -28,6 +28,7 @@ export default function CodePlayground({
   solutionRequestStatus,
   nextHref,
   tutorAvailable,
+  packages,
 }: {
   lessonKey: string;
   starterCode: string;
@@ -37,8 +38,10 @@ export default function CodePlayground({
   solutionRequestStatus: RequestStatus;
   nextHref: string | null;
   tutorAvailable: boolean;
+  /** Extra Pyodide packages this lesson needs, e.g. ["numpy", "pandas"] */
+  packages?: string[];
 }) {
-  const { status, run } = usePyodide();
+  const { status, loadingPackages, run } = usePyodide();
   const { isComplete, markComplete, hydrated } = useProgress();
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
@@ -46,6 +49,7 @@ export default function CodePlayground({
   const [code, setCode] = useState(starterCode);
   const [stdout, setStdout] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [image, setImage] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict>("none");
   const [busy, setBusy] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
@@ -55,6 +59,7 @@ export default function CodePlayground({
 
   const done = hydrated && isComplete(lessonKey);
   const booting = status === "booting";
+  const loadingPkgs = status === "loading-packages";
 
   const busyRef = useRef(false);
   useEffect(() => {
@@ -68,9 +73,11 @@ export default function CodePlayground({
       setVerdict("none");
       setError(null);
       setStdout("");
-      const result = await run(code, withCheck ? check : undefined);
+      setImage(null);
+      const result = await run(code, withCheck ? check : undefined, packages);
       setStdout(result.stdout);
       setError(result.error);
+      setImage(result.image);
       if (withCheck && !result.timedOut) {
         if (result.checkPassed) {
           setVerdict("pass");
@@ -81,7 +88,7 @@ export default function CodePlayground({
       }
       setBusy(false);
     },
-    [code, check, run, markComplete, lessonKey],
+    [code, check, run, markComplete, lessonKey, packages],
   );
 
   function askForSolution() {
@@ -103,6 +110,7 @@ export default function CodePlayground({
               setVerdict("none");
               setStdout("");
               setError(null);
+              setImage(null);
             }}
             className="text-xs text-dim transition-colors hover:text-ink"
           >
@@ -132,7 +140,12 @@ export default function CodePlayground({
         {booting && (
           <span className="text-xs text-dim">Booting Python… (first run downloads it, ~5s)</span>
         )}
-        {busy && !booting && <span className="text-xs text-dim">Working…</span>}
+        {loadingPkgs && !booting && (
+          <span className="text-xs text-dim">
+            Loading {loadingPackages.join(", ") || "libraries"}… (first time only)
+          </span>
+        )}
+        {busy && !booting && !loadingPkgs && <span className="text-xs text-dim">Working…</span>}
         {!busy && (
           <span className="hidden text-xs text-dim sm:inline">
             <kbd className="rounded border border-edge px-1">⌘/Ctrl</kbd>+
@@ -169,7 +182,7 @@ export default function CodePlayground({
         </div>
       )}
 
-      <Console stdout={stdout} error={error} busy={busy} />
+      <Console stdout={stdout} error={error} busy={busy} image={image} />
 
       {/* Hint + solution */}
       <div className="flex flex-col gap-2 text-xs">

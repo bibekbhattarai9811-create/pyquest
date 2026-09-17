@@ -16,52 +16,13 @@ import type {
   Track,
 } from "@/lib/tracks/types";
 import { pythonBasics } from "@/lib/tracks/python-basics";
+import { dataScientist } from "@/lib/tracks/data-scientist";
 
 export type { Accent, Check, ComingSoonTrack, Lesson, LiveTrack, Module, Track };
 
 /* ------------------------------------------------------------------ *
- * Tracks 2-4 — outlines only (Coming soon)
+ * Tracks 3-4 — outlines only (Coming soon)
  * ------------------------------------------------------------------ */
-
-const dataScientist: ComingSoonTrack = {
-  slug: "data-scientist",
-  title: "Data Scientist",
-  role: "Data Scientist",
-  blurb:
-    "Turn raw data into insight: NumPy arrays, pandas DataFrames, cleaning messy data, exploratory analysis, and clear charts with Matplotlib.",
-  accent: "sky",
-  status: "coming-soon",
-  outline: [
-    {
-      title: "Python for data",
-      lessons: [
-        "Virtual environments & Jupyter",
-        "NumPy arrays and vectorised math",
-        "Working with CSV and JSON files",
-      ],
-    },
-    {
-      title: "pandas",
-      lessons: [
-        "Series and DataFrames",
-        "Selecting, filtering and sorting",
-        "Grouping and aggregation",
-        "Joining datasets",
-        "Handling missing and dirty data",
-      ],
-    },
-    {
-      title: "Analysis & visualisation",
-      lessons: [
-        "Exploratory data analysis",
-        "Matplotlib and Seaborn",
-        "Descriptive statistics",
-        "Correlation and simple hypothesis tests",
-        "Capstone: analyse a real dataset",
-      ],
-    },
-  ],
-};
 
 const mlEngineer: ComingSoonTrack = {
   slug: "ml-engineer",

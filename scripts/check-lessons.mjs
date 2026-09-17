@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 const { pythonBasics } = await import("../src/lib/tracks/python-basics.ts");
+const { dataScientist } = await import("../src/lib/tracks/data-scientist.ts");
 
 const PY = process.env.PYTHON || "python";
 const dir = mkdtempSync(join(tmpdir(), "pyquest-check-"));
@@ -30,7 +31,10 @@ function run(code) {
 let pass = 0;
 const fails = [];
 const starterErrors = [];
-const lessons = pythonBasics.modules.flatMap((m) => m.lessons.map((l) => ({ m: m.title, ...l })));
+const tracks = [pythonBasics, dataScientist];
+const lessons = tracks.flatMap((t) =>
+  t.modules.flatMap((m) => m.lessons.map((l) => ({ m: `${t.slug}/${m.title}`, ...l }))),
+);
 
 for (const l of lessons) {
   const check = l.check;

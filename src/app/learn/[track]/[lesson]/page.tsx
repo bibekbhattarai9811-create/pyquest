@@ -71,6 +71,7 @@ export default async function LessonPage({
             solutionRequestStatus={access.requestStatus}
             nextHref={nextHref}
             tutorAvailable={tutorConfigured()}
+            packages={current.packages}
           />
         </div>
       </div>

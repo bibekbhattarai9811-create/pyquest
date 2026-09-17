@@ -2,12 +2,14 @@ export default function Console({
   stdout,
   error,
   busy,
+  image,
 }: {
   stdout: string;
   error: string | null;
   busy: boolean;
+  image?: string | null;
 }) {
-  const isEmpty = !stdout && !error && !busy;
+  const isEmpty = !stdout && !error && !image && !busy;
 
   return (
     <div className="rounded-lg border border-edge bg-[#0d1220]">
@@ -23,6 +25,16 @@ export default function Console({
         {stdout && <span className="text-ink">{stdout}</span>}
         {error && <span className="text-bad">{error}</span>}
       </pre>
+      {image && (
+        <div className="border-t border-edge p-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a data: URI, not an optimizable asset */}
+          <img
+            src={`data:image/png;base64,${image}`}
+            alt="Plot output"
+            className="max-w-full rounded-md border border-edge bg-white"
+          />
+        </div>
+      )}
     </div>
   );
 }
