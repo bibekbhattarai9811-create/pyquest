@@ -36,7 +36,7 @@ Open http://localhost:3100.
 | Styling | Tailwind CSS v4 (dark theme, tokens in `src/app/globals.css`) |
 | Code editor | CodeMirror 6 (`src/components/CodeEditor.tsx`) |
 | Python engine | `public/pyodide-worker.js` (Web Worker) + `src/lib/usePyodide.ts` |
-| Course content | `src/lib/tracks/python-basics.ts` (83 lessons: text, starter code, solution, checker) · `src/lib/curriculum.ts` (registry + the "coming soon" tracks) |
+| Course content | `src/lib/tracks/python-basics.ts` (83 lessons) · `src/lib/tracks/data-scientist.ts` (18 lessons: NumPy, pandas, Matplotlib) · `src/lib/curriculum.ts` (registry + the "coming soon" tracks) |
 | Database | Neon Postgres via Prisma + `@prisma/adapter-neon` (`prisma/schema.prisma`, `src/lib/db.ts`) |
 | Auth | custom email+password, DB-backed sessions (`src/lib/auth.ts`) |
 | Progress | per-user rows in the DB (`src/app/actions/progress.ts`) |
@@ -118,13 +118,38 @@ npm run db:studio           # browse/edit the database in a GUI (needs port 5432
   - `test("assert ...", "hint")` — Python asserts run right after the learner's
     code; no error = pass.
 - **Verify all lessons:** `node scripts/check-lessons.mjs` runs every lesson's
-  `solution` through real Python and checks it against its `check`.
+  `solution` through real Python (across every live track) and checks it
+  against its `check`.
+- **A lesson that needs numpy/pandas/matplotlib/etc:** add
+  `packages: ["numpy", "pandas"]` (or similar) as `L(...)`'s 8th argument. The
+  worker downloads and caches each package once per learner session (see
+  "Pyodide packages" below); omit it for plain Python.
 - **Turn a "coming soon" track on:** in `src/lib/curriculum.ts`, change its
   `status` to `"live"` and give it real `modules` instead of an `outline`.
 - **Add a module intro video** (DataCamp style): add `video: "<YouTube URL or id>"`
   to any module object in `src/lib/tracks/python-basics.ts`. It shows on that
   module's first lesson (collapsible) and as a "▶ intro video" link on the
   syllabus. Module 1's is a placeholder — swap it.
+
+### Pyodide packages (NumPy, pandas, Matplotlib, ...)
+
+Lessons can declare extra packages (e.g. the Data Scientist track). How it
+works, in `public/pyodide-worker.js` + `src/lib/usePyodide.ts`:
+
+- Packages load via `pyodide.loadPackage([...])` and are cached in a
+  module-level `Set` for the life of the worker — loaded once per learner
+  session, not once per lesson.
+- While a package downloads, the hook's `status` is `"loading-packages"`
+  (distinct from `"booting"`, which means Python itself isn't ready yet) and
+  `loadingPackages` names what's downloading, for UI copy.
+- Lessons that declare `packages` get a longer 32s run timeout (vs. 12s for
+  plain code) since a cold scikit-learn-style install can take a while; later
+  runs in the same session are fast since the package is cached.
+- If a lesson's `packages` include `matplotlib`, the worker switches it to the
+  headless `"AGG"` backend and, after the learner's code runs, captures any
+  drawn figure as a base64 PNG (`RunResult.image`), rendered by
+  `src/components/Console.tsx`. The image is never part of the pass/fail
+  check — grade Matplotlib lessons on the underlying data instead.
 
 ## Deploying
 
@@ -134,7 +159,8 @@ repo into Vercel with three environment variables.
 
 ## Known gaps / next steps
 
-- Lessons for the Data Scientist / ML / AI tracks (outlines are in place).
+- Lessons for the ML Engineer / AI Engineer tracks (outlines are in place;
+  Data Scientist is live).
 - Email verification, password reset, "remember me", social login.
 - Rate limiting on login attempts.
 - Heavy libraries (full scikit-learn, GPU) would need server-side code
